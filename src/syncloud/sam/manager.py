@@ -13,17 +13,10 @@ from syncloud.app import runner
 from config import SamConfig
 from models import AppVersions
 from storage import Applications, Versions
-from pip import Pip
 
-LOCAL_DIR = '/usr/local'
-ROOT_DIR = ''
-default_config_path = join(LOCAL_DIR, 'sam', 'config')
-config_file = 'sam.cfg'
+def get_sam(config_path):
 
-
-def get_sam(config_path=default_config_path, pip_index=None):
-
-    config = SamConfig(join(config_path, config_file), ROOT_DIR, LOCAL_DIR)
+    config = SamConfig(join(config_path, 'sam.cfg'), ROOT_DIR='')
 
     apps_dir = config.apps_dir()
     status_dir = config.status_dir()
@@ -37,9 +30,7 @@ def get_sam(config_path=default_config_path, pip_index=None):
     repo_versions = Versions(repo_versions_filename, allow_latest=True)
     applcations = Applications(app_index_filename)
 
-    pip = Pip(pip_index)
-
-    manager = Manager(pip, config, applcations, repo_versions, installed_versions)
+    manager = Manager(None, config, applcations, repo_versions, installed_versions)
 
     return manager
 
@@ -105,12 +96,6 @@ class Manager:
 
             self.set_release(release)
 
-            for app in self.applications.list():
-                version = self.repo_versions.version(app.id)
-                if not version:
-                    version = self.pip.last_version(app.id)
-                    self.repo_versions.update(app.id, version)
-
             return self.__upgradable_apps()
 
     def newer_available(self, application):
@@ -153,14 +138,6 @@ class Manager:
         self.installed_versions.update(app.id, a.current_version)
         return "installed successfully"
 
-    def latest(self, app_id):
-        return self.pip.last_version(app_id)
-
-    def verify(self, app_id):
-        # a = self.get_app(app_id, False)
-        # self.run_action(a.app, 'verify')
-        return "verified successfully"
-
     def get_app_versions(self, app):
         latest_version = self.repo_versions.version(app.id)
         installed_version = self.installed_versions.version(app.id)
@@ -183,7 +160,7 @@ class Manager:
 
     def run_hook(self, app, action):
 
-        hook_bin = os.path.join(self.config.bin_dir(), app.id + '-' + action)
+        hook_bin = os.path.join(self.config.apps_dir(), app.id, action)
         if not os.path.isfile(hook_bin):
             self.logger.info("{} hook is not found, skipping".format(hook_bin))
             return

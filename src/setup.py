@@ -19,7 +19,6 @@ setup(
     packages=['syncloud', 'syncloud.sam'],
     namespace_packages=['syncloud'],
     py_modules=['syncloud-sam'],
-    data_files=[('sam/config', ['config/sam.cfg'])],
     author='Syncloud',
     author_email='support@syncloud.it',
     url='https://github.com/syncloud/sam'

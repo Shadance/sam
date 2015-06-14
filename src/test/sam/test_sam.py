@@ -123,7 +123,6 @@ class BaseTest:
         self.config.set_apps_dir(apps_dir)
         self.config.set_status_dir(status_dir)
         self.config.set_apps_url_template(apps_url_template)
-        self.config.set_bin_dir('/usr/local/bin')
 
         self.sam = get_sam(self.config_dir, self.pypi.url())
 

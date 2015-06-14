@@ -2,7 +2,7 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-ARCHITECTURE='x86_64'
+ARCHITECTURE=$1
 
 VERSION=`cat version`
 
@@ -29,6 +29,7 @@ rm get-pip.py
 ${PYTHON_PATH}/pip install ${DIR}/src/dist/syncloud-sam-${VERSION}.tar.gz
 
 cp -r ../../bin bin
+cp -r ../../config config
 
 cd ..
 tar -zcvf sam-${VERSION}-${ARCHITECTURE}.tar.gz sam
