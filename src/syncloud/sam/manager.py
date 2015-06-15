@@ -2,11 +2,12 @@ import os
 import urllib
 import tempfile
 import zipfile
+import tarfile
 import shutil
 import stat
 import logging
 import logging.handlers
-from os.path import join
+from os.path import join, exists
 from syncloud.app import logger
 from syncloud.app import runner
 
@@ -14,17 +15,17 @@ from config import SamConfig
 from models import AppVersions
 from storage import Applications, Versions
 
-def get_sam(config_path):
+def get_sam(sam_home):
 
-    config = SamConfig(join(config_path, 'sam.cfg'), ROOT_DIR='')
+    config = SamConfig(join(sam_home, 'config', 'sam.cfg'))
 
     apps_dir = config.apps_dir()
     status_dir = config.status_dir()
 
-    app_index_filename = os.path.join(apps_dir, 'index')
-    repo_versions_filename = os.path.join(apps_dir, 'versions')
+    app_index_filename = join(apps_dir, 'index')
+    repo_versions_filename = join(apps_dir, 'versions')
 
-    installed_versions_filename = os.path.join(status_dir, 'installed.apps')
+    installed_versions_filename = join(status_dir, 'installed.apps')
 
     installed_versions = Versions(installed_versions_filename)
     repo_versions = Versions(repo_versions_filename, allow_latest=True)
@@ -47,7 +48,7 @@ class Manager:
         self.repo_versions = repo_versions
         self.installed_versions = installed_versions
         self.logger = logger.get_logger('sam.manager')
-        self.release_filename = os.path.join(self.config.status_dir(), 'release')
+        self.release_filename = join(self.config.status_dir(), 'release')
 
     def get_release(self):
         if os.path.isfile(self.release_filename):
@@ -59,7 +60,7 @@ class Manager:
 
     def set_release(self, release):
         with open(self.release_filename, 'w+') as f:
-                f.write(release)
+            f.write(release)
 
     def update(self, release=None):
         self.logger.info("update")
@@ -68,31 +69,26 @@ class Manager:
             release = self.get_release()
 
         if release:
-            apps_url_template = self.config.apps_url_template()
-            apps_url = apps_url_template.format(release)
+            releases_url = self.config.releases_url()
+            download_dir = tempfile.mkdtemp()
 
-            extract_dir = tempfile.mkdtemp()
-            archive_filename = os.path.join(extract_dir, 'archive.zip')
+            index_url = join(releases_url, release, 'index')
+            downloaded_index = join(download_dir, 'index')
 
-            self.logger.info("loading: {0}".format(apps_url))
-            urllib.urlretrieve(apps_url, filename=archive_filename)
+            self.logger.info("loading: {0}".format(index_url))
+            urllib.urlretrieve(index_url, filename=downloaded_index)
 
-            extract_to_dir = os.path.join(extract_dir, 'unzipped')
+            versions_url = join(releases_url, release, 'versions')
+            downloaded_versions = join(download_dir, 'versions')
 
-            z = zipfile.ZipFile(archive_filename, 'r')
-            z.extractall(extract_to_dir)
+            self.logger.info("loading: {0}".format(versions_url))
+            urllib.urlretrieve(versions_url, filename=downloaded_versions)
 
-            subdirs = [name for name in os.listdir(extract_to_dir) if os.path.isdir(os.path.join(extract_to_dir, name))]
+            sam_index = join(self.config.apps_dir(), 'index')
+            shutil.copyfile(downloaded_index, sam_index)
 
-            extracted_apps_dir = os.path.join(extract_to_dir, subdirs[0])
-
-            for filename in [name for name in os.listdir(extracted_apps_dir) if os.path.isfile(os.path.join(extracted_apps_dir, name))]:
-                full_filename = os.path.join(extracted_apps_dir, filename)
-                st = os.stat(full_filename)
-                os.chmod(full_filename, st.st_mode | stat.S_IEXEC)
-
-            shutil.rmtree(self.apps_dir, ignore_errors=True)
-            shutil.copytree(extracted_apps_dir, self.apps_dir)
+            sam_versions = join(self.config.apps_dir(), 'versions')
+            shutil.copyfile(downloaded_versions, sam_versions)
 
             self.set_release(release)
 
@@ -112,12 +108,6 @@ class Manager:
         for application in self.__upgradable_apps():
             self.install(application.app.id)
 
-    def reconfigure_installed_apps(self):
-        self.logger.info("reconfigure installed apps")
-        installed_apps = [a for a in self.list() if a.installed_version]
-        for application in installed_apps:
-            self.run_hook(application.app, 'reconfigure')
-
     def list(self):
         apps = self.applications.list()
         return [self.get_app_versions(app) for app in apps]
@@ -133,7 +123,17 @@ class Manager:
     def install(self, app_id):
         a = self.get_app(app_id, False)
         app = a.app
-        self.pip.install(app.id, a.current_version)
+
+        download_dir = tempfile.mkdtemp()
+        app_filename = '{}-{}-{}.tar.gz'.format(app.id, a.current_version, 'x86_64')
+        app_url = join(self.config.apps_url(), app_filename)
+        downloaded_filename = join(download_dir, app_filename)
+        urllib.urlretrieve(app_url, filename=downloaded_filename)
+        app_installed_path = join(self.config.apps_dir(), app.id)
+        if exists(app_installed_path):
+            shutil.rmtree(app_installed_path)
+        tarfile.open(downloaded_filename).extractall(self.config.apps_dir())
+
         self.run_hook(app, 'post-install')
         self.installed_versions.update(app.id, a.current_version)
         return "installed successfully"
@@ -160,7 +160,7 @@ class Manager:
 
     def run_hook(self, app, action):
 
-        hook_bin = os.path.join(self.config.apps_dir(), app.id, action)
+        hook_bin = join(self.config.apps_dir(), app.id, action)
         if not os.path.isfile(hook_bin):
             self.logger.info("{} hook is not found, skipping".format(hook_bin))
             return

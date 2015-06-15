@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import logging
-from os.path import join, dirname
+from os.path import join, dirname, normpath
 import sys
 import argparse
 from syncloud.app import main
@@ -22,7 +22,7 @@ def get_arg_parser():
     sub = subparsers.add_parser('install', help="install application")
     sub.add_argument('app_id', help="application id")
 
-    sub = subparsers.add_parser('uninstall', help="uninstall application")
+    sub = subparsers.add_parser('remove', help="remove application")
     sub.add_argument('app_id', help="application id")
 
     sub = subparsers.add_parser('update', help="update apps repository")
@@ -40,6 +40,8 @@ if __name__ == '__main__':
     level = logging.DEBUG if args.debug else logging.INFO
     logger.init(level, console, '/var/log/sam.log')
 
-    sam = get_sam()
+    sam_home = normpath(join(dirname(__file__), '..'))
+
+    sam = get_sam(sam_home)
 
     main.execute(sam, args)
