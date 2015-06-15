@@ -116,7 +116,11 @@ class Manager:
         a = self.get_app(app_id, True)
         app = a.app
         self.run_hook(app, 'pre-remove')
-        self.pip.uninstall(app.id)
+
+        app_installed_path = join(self.config.apps_dir(), app.id)
+        if exists(app_installed_path):
+            shutil.rmtree(app_installed_path)
+
         self.installed_versions.remove(app.id)
         return "removed successfully"
 

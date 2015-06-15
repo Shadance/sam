@@ -13,7 +13,6 @@ from syncloud.sam.manager import get_sam
 from syncloud.sam.config import SamConfig
 
 from subprocess import check_output
-import responses
 import tarfile
 
 test_dir = dirname(__file__)
@@ -118,6 +117,8 @@ class BaseTest:
 
     def create_release(self, release, index, versions=None):
         release_dir = join(self.releases_url_dir, release)
+        if os.path.exists(release_dir):
+            shutil.rmtree(release_dir)
         os.makedirs(release_dir)
 
         text_file(release_dir, 'index', index)
@@ -170,7 +171,8 @@ class TestBasic(BaseTest):
         applications = self.sam.list()
         assert_single_application(applications, 'test-app', 'test app', '1.1', '1.1')
 
-        output = check_output('test-app', shell=True)
+        test_app_path = join(self.apps_dir, 'test-app', 'bin', 'test-app')
+        output = check_output(test_app_path, shell=True)
         assert output.strip() == '1.1'
 
     def test_remove(self):
@@ -186,7 +188,7 @@ class TestBasic(BaseTest):
         assert_single_application(applications, 'test-app', 'test app', '1.0', None)
 
 
-class __TestUpdates(BaseTest):
+class TestUpdates(BaseTest):
 
     def test_update_simple(self):
         self.create_app_version('test-app', '1.0')
@@ -228,7 +230,7 @@ class __TestUpdates(BaseTest):
     def test_update_bootstrap_no_apps_dir(self):
         self.config.set_apps_dir(join(self.config.apps_dir(), 'non_existent'))
 
-        sam = get_sam(self.config_dir)
+        sam = get_sam(self.home_dir)
 
         self.create_release('release-1.0', one_app_index(), 'test-app=1.0')
         sam.update('release-1.0')
@@ -236,24 +238,8 @@ class __TestUpdates(BaseTest):
         applications = sam.list()
         assert_single_application(applications, 'test-app', 'test app', '1.0', None)
 
-    @responses.activate
-    def test_update_no_versions(self):
-        self.create_app_version('test-app', '1.0')
-        self.create_release('release-1.0', one_app_index(), versions=None)
 
-        responses.add(responses.GET,
-                      "https://pypi.python.org/pypi/test-app/json",
-                      status=200,
-                      body='{"info": {"version": "1.0"}}',
-                      content_type="application/json")
-
-        self.sam.update('release-1.0')
-
-        applications = self.sam.list()
-        assert_single_application(applications, 'test-app', 'test app', '1.0', None)
-
-
-class __TestUpgradeAll(BaseTest):
+class TestUpgradeAll(BaseTest):
 
     def test_update_usual_app(self):
         self.create_app_version('test-app', '1.0')
