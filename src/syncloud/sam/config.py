@@ -44,3 +44,9 @@ class SamConfig:
 
     def set_releases_url(self, value):
         self.__set_param('sam', 'releases_url', value)
+
+    def run_hook_path(self):
+        return self.parser.get('sam', 'run_hook_path')
+
+    def set_run_hook_path(self, value):
+        self.__set_param('sam', 'run_hook_path', value)

@@ -135,7 +135,7 @@ class Manager:
         urllib.urlretrieve(app_url, filename=downloaded_filename)
         app_installed_path = join(self.config.apps_dir(), app.id)
         if exists(app_installed_path):
-            shutil.rmtree(app_installed_path)
+            self.remove(app_id)
         tarfile.open(downloaded_filename).extractall(self.config.apps_dir())
 
         self.run_hook(app, 'post-install')
@@ -163,11 +163,10 @@ class Manager:
         return found
 
     def run_hook(self, app, action):
-
-        hook_bin = join(self.config.apps_dir(), app.id, action)
-        if not os.path.isfile(hook_bin):
-            self.logger.info("{} hook is not found, skipping".format(hook_bin))
+        hook_script = join(self.config.apps_dir(), app.id, 'bin', action)
+        if not os.path.isfile(hook_script):
+            self.logger.info("{} hook is not found, skipping".format(hook_script))
             return
 
-        if not runner.call(hook_bin, self.logger, stdout_log_level=logging.INFO, shell=True) == 0:
-            raise Exception("unable to run {}".format(hook_bin))
+        if not runner.call([self.config.run_hook_path(), hook_script], self.logger, stdout_log_level=logging.INFO, shell=True) == 0:
+            raise Exception("unable to run {}".format(hook_script))

@@ -113,6 +113,11 @@ class BaseTest:
         self.config.set_apps_url(apps_url)
         self.config.set_releases_url(releases_url)
 
+        self.run_hook_tool_dir = tempfile.mkdtemp()
+        run_hook_content='#!/bin/sh\necho "run_hook executed"'
+        run_hook_tool_path = text_file(self.run_hook_tool_dir, "run_hook", run_hook_content)
+        self.config.set_run_hook_path(run_hook_tool_path)
+
         self.sam = get_sam(self.home_dir)
 
     def create_release(self, release, index, versions=None):
@@ -266,7 +271,7 @@ class TestUpgradeAll(BaseTest):
         assert_single_application(applications, 'test-app', 'test app', '1.0', '1.0')
 
 
-class __TestHooks(BaseTest):
+class TestHooks(BaseTest):
 
     def test_remove_hook_good(self):
         pre_remove_content = '#!/bin/sh\nexit 0'
