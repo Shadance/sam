@@ -2,25 +2,29 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+NAME="sam"
 ARCHITECTURE=$1
+VERSION="local"
+if [ ! -z "$2" ]; then
+    VERSION=$2
+fi
 
-VERSION=`cat version`
-
-PYTHON_PATH='python/bin'
-
-cp version src/version
+rm -f src/version
+echo ${VERSION} >> src/version
 cd src
 python setup.py sdist
 cd ..
 
 rm -rf build
 mkdir build
-mkdir build/sam
-cd build/sam
+mkdir build/${NAME}
+cd build/${NAME}
 
 wget -O python.tar.gz http://build.syncloud.org:8111/guestAuth/repository/download/thirdparty_python_${ARCHITECTURE}/lastSuccessful/python.tar.gz
 tar -xvf python.tar.gz
 rm python.tar.gz
+
+PYTHON_PATH='python/bin'
 
 wget -O get-pip.py https://bootstrap.pypa.io/get-pip.py
 ${PYTHON_PATH}/python get-pip.py
@@ -28,8 +32,14 @@ rm get-pip.py
 
 ${PYTHON_PATH}/pip install ${DIR}/src/dist/syncloud-sam-${VERSION}.tar.gz
 
-cp -r ../../bin bin
-cp -r ../../config config
+cd ../..
 
-cd ..
-tar -zcvf sam-${VERSION}-${ARCHITECTURE}.tar.gz sam
+cp -r bin build/${NAME}
+cp -r config build/${NAME}
+
+mkdir build/${NAME}/META
+echo ${NAME} >> build/${NAME}/META/app
+echo ${VERSION} >> build/${NAME}/META/version
+
+cd build
+tar -zcvf ${NAME}-${VERSION}-${ARCHITECTURE}.tar.gz ${NAME}
