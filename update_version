@@ -7,7 +7,7 @@ path = abspath(normpath(join(dirname(__file__), 'src')))
 
 sys.path.insert(1, path)
 
-from syncloud.sam.storage import Versions
+from syncloud.sam.versions import Versions
 
 filename = sys.argv[1]
 app = sys.argv[2]

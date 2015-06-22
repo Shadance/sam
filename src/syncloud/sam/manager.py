@@ -13,7 +13,8 @@ from syncloud.app import runner
 
 from config import SamConfig
 from models import AppVersions
-from storage import Applications, Versions
+from storage import Applications
+from versions import Versions
 
 def get_sam(sam_home):
 
