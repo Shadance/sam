@@ -2,7 +2,6 @@ from os.path import isdir, dirname, isfile
 from os import makedirs
 
 import convertible
-from syncloud.app import logger
 import models
 
 
@@ -24,12 +23,11 @@ class Versions:
         self.filename = filename
         self.__create_folder(filename)
         self.allow_latest = allow_latest
-        self.logger = logger.get_logger('versions')
 
 
     def __create_folder(self, filename):
         path = dirname(filename)
-        if not isdir(path):
+        if not path == '' and  not isdir(path):
             makedirs(path)
 
     def __read(self):
@@ -55,9 +53,7 @@ class Versions:
                 f.write('{}={}\n'.format(id, version))
 
     def version(self, name):
-        # self.logger.debug('getting versions for {}'.format(name))
         versions = self.__read()
-        # self.logger.debug('found {} versions'.format(len(versions)))
         return versions.get(name, None)
 
     def remove(self, name):
