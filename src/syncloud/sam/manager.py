@@ -116,7 +116,7 @@ class Manager:
     def remove(self, app_id):
         a = self.get_app(app_id, True)
         app = a.app
-        self.run_hook(app, 'pre-remove')
+        self.run_hook(app_id, 'pre-remove')
 
         app_installed_path = join(self.config.apps_dir(), app.id)
         if exists(app_installed_path):
@@ -125,23 +125,45 @@ class Manager:
         self.installed_versions.remove(app.id)
         return "removed successfully"
 
-    def install(self, app_id):
-        a = self.get_app(app_id, False)
-        app = a.app
+    def install(self, app_id_or_filename):
+        app_archive_filename = app_id_or_filename
 
-        download_dir = tempfile.mkdtemp()
-        app_filename = '{}-{}-{}.tar.gz'.format(app.id, a.current_version, 'x86_64')
-        app_url = join(self.config.apps_url(), app_filename)
-        downloaded_filename = join(download_dir, app_filename)
-        urllib.urlretrieve(app_url, filename=downloaded_filename)
-        app_installed_path = join(self.config.apps_dir(), app.id)
+        if not exists(app_archive_filename):
+            app_id = app_id_or_filename
+            a = self.get_app(app_id, False)
+            version = a.current_version
+
+            download_dir = tempfile.mkdtemp()
+            app_filename = '{}-{}-{}.tar.gz'.format(app_id, version, 'x86_64')
+            app_url = join(self.config.apps_url(), app_filename)
+            app_archive_filename = join(download_dir, app_filename)
+            urllib.urlretrieve(app_url, filename=app_archive_filename)
+
+        self.install_file(app_archive_filename)
+
+    def install_file(self, filename):
+        unpack_dir = tempfile.mkdtemp()
+        tarfile.open(filename).extractall(unpack_dir)
+        unpack_app_folder = os.listdir(unpack_dir)[0]
+        unpack_app_path = join(unpack_dir, unpack_app_folder)
+
+        (app_id, version) = self.read_meta_app_version(unpack_app_path)
+
+        app_installed_path = join(self.config.apps_dir(), app_id)
         if exists(app_installed_path):
             self.remove(app_id)
-        tarfile.open(downloaded_filename).extractall(self.config.apps_dir())
+        shutil.copytree(join(unpack_dir, app_id), app_installed_path)
 
-        self.run_hook(app, 'post-install')
-        self.installed_versions.update(app.id, a.current_version)
+        self.run_hook(app_id, 'post-install')
+        self.installed_versions.update(app_id, version)
         return "installed successfully"
+
+    def read_meta_app_version(self, app_folder):
+        app_id_path = join(app_folder, 'META', 'app')
+        version_path = join(app_folder, 'META', 'version')
+        app_id = open(app_id_path, 'r').readline()
+        version = open(version_path, 'r').readline()
+        return app_id, version
 
     def get_app_versions(self, app):
         latest_version = self.repo_versions.version(app.id)
@@ -163,8 +185,8 @@ class Manager:
 
         return found
 
-    def run_hook(self, app, action):
-        hook_script = join(self.config.apps_dir(), app.id, 'bin', action)
+    def run_hook(self, app_id, action):
+        hook_script = join(self.config.apps_dir(), app_id, 'bin', action)
         if not os.path.isfile(hook_script):
             self.logger.info("{} hook is not found, skipping".format(hook_script))
             return

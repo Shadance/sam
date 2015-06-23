@@ -20,7 +20,7 @@ def get_arg_parser():
     subparsers.add_parser('list', help="list apps")
 
     sub = subparsers.add_parser('install', help="install application")
-    sub.add_argument('app_id', help="application id")
+    sub.add_argument('app_id_or_filename', help="application id or application archive file")
 
     sub = subparsers.add_parser('remove', help="remove application")
     sub.add_argument('app_id', help="application id")

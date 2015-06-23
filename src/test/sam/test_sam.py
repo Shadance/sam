@@ -47,6 +47,11 @@ echo "{}"'''.format(version)
     if post_install:
         text_file(app_folder, 'post_install', post_install)
 
+    app_meta_folder = join(app_folder, 'META')
+    makedirs(app_meta_folder)
+    text_file(app_meta_folder, 'app', name)
+    text_file(app_meta_folder, 'version', version)
+
     app_archive = '{}-{}-{}.tar.gz'.format(name, version, architecture)
     app_archive_path = join(temp_folder, app_archive)
 
