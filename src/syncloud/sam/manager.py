@@ -114,15 +114,13 @@ class Manager:
         return [self.get_app_versions(app) for app in apps]
 
     def remove(self, app_id):
-        a = self.get_app(app_id, True)
-        app = a.app
         self.run_hook(app_id, 'pre-remove')
 
-        app_installed_path = join(self.config.apps_dir(), app.id)
+        app_installed_path = join(self.config.apps_dir(), app_id)
         if exists(app_installed_path):
             shutil.rmtree(app_installed_path)
 
-        self.installed_versions.remove(app.id)
+        self.installed_versions.remove(app_id)
         return "removed successfully"
 
     def install(self, app_id_or_filename):
@@ -191,5 +189,5 @@ class Manager:
             self.logger.info("{} hook is not found, skipping".format(hook_script))
             return
 
-        if not runner.call([self.config.run_hook_path(), hook_script], self.logger, stdout_log_level=logging.INFO, shell=True) == 0:
+        if not runner.call(' '.join([self.config.run_hook_path(), hook_script]), self.logger, stdout_log_level=logging.INFO, shell=True) == 0:
             raise Exception("unable to run {}".format(hook_script))
