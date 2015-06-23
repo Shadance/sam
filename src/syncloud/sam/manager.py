@@ -161,8 +161,8 @@ class Manager:
     def read_meta_app_version(self, app_folder):
         app_id_path = join(app_folder, 'META', 'app')
         version_path = join(app_folder, 'META', 'version')
-        app_id = open(app_id_path, 'r').readline()
-        version = open(version_path, 'r').readline()
+        app_id = open(app_id_path, 'r').read().strip()
+        version = open(version_path, 'r').read().strip()
         return app_id, version
 
     def get_app_versions(self, app):
