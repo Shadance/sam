@@ -1,3 +1,4 @@
 #!/bin/sh
 DIR=$(dirname $0)
-${DIR}/../python/bin/python ${DIR}/sam.py $@
+PYTHONHOME=${DIR}/../python
+${PYTHONHOME}/bin/python ${DIR}/sam.py $@
