@@ -7,10 +7,10 @@ from os import makedirs
 import shutil
 import tempfile
 import pytest
-from syncloud.app import logger
+from syncloud_app import logger
 
-from syncloud.sam.manager import get_sam
-from syncloud.sam.config import SamConfig
+from syncloud_sam.manager import get_sam
+from syncloud_sam.config import SamConfig
 
 from subprocess import check_output
 import tarfile

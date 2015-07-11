@@ -3,12 +3,12 @@ import logging
 from os.path import join, dirname, normpath
 import sys
 import argparse
-from syncloud.app import main
-from syncloud.app import logger
+from syncloud_app import main
+from syncloud_app import logger
 
 sys.path.append(join(dirname(__file__), '../src'))
 
-from syncloud.sam.manager import get_sam
+from syncloud_sam.manager import get_sam
 
 
 def get_arg_parser():

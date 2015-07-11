@@ -6,7 +6,7 @@ requirements = [
     'urllib3==1.7.1',
     'convertible==0.13',
     'requests==2.2.1',
-    'syncloud-app==0.37'
+    'syncloud-app==0.38'
 ]
 
 version = open(join(dirname(__file__), 'version')).read().strip()
@@ -16,9 +16,7 @@ setup(
     name='syncloud-sam',
     version=version,
     install_requires=requirements,
-    packages=['syncloud', 'syncloud.sam'],
-    namespace_packages=['syncloud'],
-    py_modules=['syncloud-sam'],
+    packages=['syncloud_sam'],
     author='Syncloud',
     author_email='support@syncloud.it',
     url='https://github.com/syncloud/sam'

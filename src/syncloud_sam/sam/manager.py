@@ -8,8 +8,8 @@ import stat
 import logging
 import logging.handlers
 from os.path import join, exists
-from syncloud.app import logger
-from syncloud.app import runner
+from syncloud_app import logger
+from syncloud_app import runner
 
 from config import SamConfig
 from models import AppVersions
