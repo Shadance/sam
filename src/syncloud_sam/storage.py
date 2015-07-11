@@ -1,5 +1,6 @@
 import convertible
-import models
+
+from src.syncloud_sam import models
 
 
 class Applications:

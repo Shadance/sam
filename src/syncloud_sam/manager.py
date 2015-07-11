@@ -1,20 +1,19 @@
 import os
 import urllib
 import tempfile
-import zipfile
 import tarfile
 import shutil
-import stat
 import logging
 import logging.handlers
 from os.path import join, exists
+
 from syncloud_app import logger
 from syncloud_app import runner
-
 from config import SamConfig
 from models import AppVersions
 from storage import Applications
-from versions import Versions
+from src.syncloud_sam.versions import Versions
+
 
 def get_sam(sam_home):
 
