@@ -43,5 +43,4 @@ mkdir build/${NAME}/META
 echo ${NAME} >> build/${NAME}/META/app
 echo ${VERSION} >> build/${NAME}/META/version
 
-cd build
-tar -zcf ${NAME}-${VERSION}-${ARCHITECTURE}.tar.gz ${NAME}
+tar -zcf ${NAME}-${VERSION}-${ARCHITECTURE}.tar.gz -C build ${NAME}
