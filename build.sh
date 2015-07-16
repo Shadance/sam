@@ -38,6 +38,7 @@ cd ../..
 
 cp -r bin build/${NAME}
 cp -r config build/${NAME}
+sed  -i 's/arch:.*/arch: ${ARCHITECTURE}/g' build/${NAME}/config/sam.cfg
 
 mkdir build/${NAME}/META
 echo ${NAME} >> build/${NAME}/META/app

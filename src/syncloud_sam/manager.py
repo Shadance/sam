@@ -131,7 +131,7 @@ class Manager:
             version = a.current_version
 
             download_dir = tempfile.mkdtemp()
-            app_filename = '{}-{}-{}.tar.gz'.format(app_id, version, 'x86_64')
+            app_filename = '{}-{}-{}.tar.gz'.format(app_id, version, self.config.arch())
             app_url = join(self.config.apps_url(), app_filename)
             app_archive_filename = join(download_dir, app_filename)
             urllib.urlretrieve(app_url, filename=app_archive_filename)

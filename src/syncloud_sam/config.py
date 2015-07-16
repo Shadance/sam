@@ -50,3 +50,6 @@ class SamConfig:
 
     def set_run_hook_path(self, value):
         self.__set_param('sam', 'run_hook_path', value)
+
+    def arch(self):
+        return self.parser.get('sam', 'arch')
