@@ -42,5 +42,5 @@ cp -r config build/${NAME}
 mkdir build/${NAME}/META
 echo ${NAME} >> build/${NAME}/META/app
 echo ${VERSION} >> build/${NAME}/META/version
-
+rm -rf ${NAME}*.tar.gz
 tar -zcf ${NAME}-${VERSION}-${ARCHITECTURE}.tar.gz -C build ${NAME}
