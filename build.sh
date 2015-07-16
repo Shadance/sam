@@ -20,8 +20,8 @@ mkdir build
 mkdir build/${NAME}
 cd build/${NAME}
 
-wget -O python.tar.gz http://build.syncloud.org:8111/guestAuth/repository/download/thirdparty_python_${ARCHITECTURE}/lastSuccessful/python.tar.gz
-tar -xvf python.tar.gz
+wget -O python.tar.gz http://build.syncloud.org:8111/guestAuth/repository/download/thirdparty_python_${ARCHITECTURE}/lastSuccessful/python.tar.gz  --progress dot:giga
+tar -xf python.tar.gz
 rm python.tar.gz
 
 PYTHON_PATH='python/bin'
@@ -42,4 +42,4 @@ echo ${NAME} >> build/${NAME}/META/app
 echo ${VERSION} >> build/${NAME}/META/version
 
 cd build
-tar -zcvf ${NAME}-${VERSION}-${ARCHITECTURE}.tar.gz ${NAME}
+tar -zcf ${NAME}-${VERSION}-${ARCHITECTURE}.tar.gz ${NAME}
