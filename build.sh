@@ -1,10 +1,12 @@
-#!/bin/sh -x
+#!/bin/bash -x
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd ${DIR}
 
 NAME="sam"
 ARCHITECTURE=$1
 VERSION="local"
+
 if [ ! -z "$2" ]; then
     VERSION=$2
 fi
