@@ -17,4 +17,5 @@ mkdir /tmp/rootfs
 tar xzf rootfs.tar.gz -C /tmp/rootfs
 cp -r ./* /tmp/rootfs/root
 chroot /tmp/rootfs root/build.sh $@
-mv /tmp/rootfs/root/build/*.tar.gz .
+rm -rf sam*.tar.gz
+mv /tmp/rootfs/root/build/sam*.tar.gz .
