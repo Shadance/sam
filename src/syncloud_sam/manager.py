@@ -89,6 +89,7 @@ class Manager:
 
             sam_versions = join(self.config.apps_dir(), 'versions')
             shutil.copyfile(downloaded_versions, sam_versions)
+            shutil.rmtree(download_dir)
 
             self.set_release(release)
 
@@ -153,7 +154,7 @@ class Manager:
         if exists(app_installed_path):
             self.remove(app_id)
         shutil.copytree(join(unpack_dir, app_id), app_installed_path)
-
+        shutil.rmtree(unpack_dir)
         self.run_hook(app_id, 'post-install')
         self.installed_versions.update(app_id, version)
         return "installed successfully"
