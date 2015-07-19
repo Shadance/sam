@@ -124,19 +124,22 @@ class Manager:
 
     def install(self, app_id_or_filename):
         app_archive_filename = app_id_or_filename
-
+        temp_dir = None
         if not exists(app_archive_filename):
             app_id = app_id_or_filename
             a = self.get_app(app_id, False)
             version = a.current_version
 
             download_dir = tempfile.mkdtemp()
+            temp_dir = download_dir
             app_filename = '{}-{}-{}.tar.gz'.format(app_id, version, self.config.arch())
             app_url = join(self.config.apps_url(), app_filename)
             app_archive_filename = join(download_dir, app_filename)
+            self.logger.info("downloading: {0}".format(app_url))
             urllib.urlretrieve(app_url, filename=app_archive_filename)
 
         self.install_file(app_archive_filename)
+        shutil.rmtree(temp_dir)
 
     def install_file(self, filename):
         unpack_dir = tempfile.mkdtemp()
