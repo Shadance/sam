@@ -140,7 +140,8 @@ class Manager:
             urllib.urlretrieve(app_url, filename=app_archive_filename)
 
         self.install_file(app_archive_filename)
-        shutil.rmtree(temp_dir)
+        if temp_dir:
+            shutil.rmtree(temp_dir)
 
     def install_file(self, filename):
         unpack_dir = tempfile.mkdtemp()
