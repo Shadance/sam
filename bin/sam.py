@@ -1,13 +1,19 @@
 #!/usr/bin/env python
 import logging
-from os.path import join, dirname, normpath
+from os.path import join, dirname, normpath, isdir
+from os import listdir
 import sys
 import argparse
+
+app_path = join(dirname(__file__), '..')
+sys.path.append(join(app_path, 'src'))
+
+lib_path = join(app_path, 'lib')
+libs = [join(lib_path, item) for item in listdir(lib_path) if isdir(join(lib_path, item))]
+map(sys.path.append, libs)
+
 from syncloud_app import main
 from syncloud_app import logger
-
-sys.path.append(join(dirname(__file__), '../src'))
-
 from syncloud_sam.manager import get_sam
 
 

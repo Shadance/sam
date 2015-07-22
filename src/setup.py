@@ -2,10 +2,8 @@ from setuptools import setup
 from os.path import join, dirname
 
 requirements = [
-    'wget==2.2',
     'urllib3==1.7.1',
     'convertible==0.13',
-    'requests==2.2.1',
     'syncloud-app==0.38'
 ]
 

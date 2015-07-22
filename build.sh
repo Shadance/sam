@@ -11,33 +11,42 @@ if [ ! -z "$2" ]; then
     VERSION=$2
 fi
 
-rm -f src/version
-echo ${VERSION} >> src/version
+function 3rdparty {
+  APP_ID=$1
+  APP_FILE=$2
+  if [ ! -d ${DIR}/3rdparty ]; then
+    mkdir ${DIR}/3rdparty
+  fi
+  if [ ! -f ${DIR}/3rdparty/${APP_FILE} ]; then
+    wget http://build.syncloud.org:8111/guestAuth/repository/download/thirdparty_${APP_ID}_${ARCHITECTURE}/lastSuccessful/${APP_FILE} \
+    -O ${DIR}/3rdparty/${APP_FILE} --progress dot:giga
+  else
+    echo "skipping ${APP_ID}"
+  fi
+}
+
+pip install -y --upgrade coin
+
 cd src
 python setup.py sdist
 cd ..
 
+coin ${DIR}/src/dist/syncloud-sam-${VERSION}.tar.gz --to ${DIR}/lib
+./coin_lib.sh
+
 rm -rf build
-mkdir build
-mkdir build/${NAME}
-cd build/${NAME}
+BUILD_DIR=${DIR}/build/${NAME}
+mkdir -p ${BUILD_DIR}
 
-wget -O python.tar.gz http://build.syncloud.org:8111/guestAuth/repository/download/thirdparty_python_${ARCHITECTURE}/lastSuccessful/python.tar.gz  --progress dot:giga
-tar -xf python.tar.gz
-rm python.tar.gz
+PYTHON_ZIP=python.tar.gz
+3rdparty python ${PYTHON_ZIP}
 
-PYTHON_PATH='python/bin'
+tar -xf ${DIR}/3rdparty/${PYTHON_ZIP} -C ${BUILD_DIR}
 
-wget -O get-pip.py https://bootstrap.pypa.io/get-pip.py
-${PYTHON_PATH}/python get-pip.py
-rm get-pip.py
+cp -r lib ${BUILD_DIR}
+cp -r bin ${BUILD_DIR}
+cp -r config ${BUILD_DIR}
 
-${PYTHON_PATH}/pip install ${DIR}/src/dist/syncloud-sam-${VERSION}.tar.gz
-
-cd ../..
-
-cp -r bin build/${NAME}
-cp -r config build/${NAME}
 sed  -i "s/arch:.*/arch: ${ARCHITECTURE}/g" build/${NAME}/config/sam.cfg
 
 mkdir build/${NAME}/META
