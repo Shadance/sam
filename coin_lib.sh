@@ -3,6 +3,10 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd ${DIR}
 
+if [ ! -d lib ]; then
+  mkdir lib
+fi
+
 cd lib
 
 coin https://pypi.python.org/packages/py2/u/urllib3/urllib3-1.10.4-py2-none-any.whl
