@@ -25,7 +25,7 @@ function 3rdparty {
   fi
 }
 
-pip install -y --upgrade coin
+pip install --upgrade coin
 
 cd src
 python setup.py sdist
