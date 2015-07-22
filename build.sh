@@ -27,6 +27,9 @@ function 3rdparty {
 
 pip install --upgrade coin
 
+rm -f src/version
+echo ${VERSION} >> src/version
+
 cd src
 python setup.py sdist
 cd ..
