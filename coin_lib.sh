@@ -7,6 +7,8 @@ if [ ! -d lib ]; then
   mkdir lib
 fi
 
+rm -rf lib/*
+
 cd lib
 
 coin py https://pypi.python.org/packages/py2/u/urllib3/urllib3-1.10.4-py2-none-any.whl
