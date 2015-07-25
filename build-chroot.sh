@@ -6,8 +6,7 @@ if [ ! -z "$1" ]; then
 fi
 
 if [ ! -f "rootfs.tar.gz" ]; then
-  wget http://build.syncloud.org:8111/guestAuth/repository/download/debian_rootfs_${ARCH}/lastSuccessful/rootfs.tar.gz\
-  -O rootfs.tar.gz --progress dot:giga
+    wget http://build.syncloud.org:8111/guestAuth/repository/download/image_${ARCH}_rootfs/lastSuccessful/rootfs.tar.gz -O rootfs.tar.gz --progress dot:giga
 else
     echo "rootfs.tar.gz is here"
 fi
