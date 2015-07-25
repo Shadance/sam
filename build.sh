@@ -34,8 +34,8 @@ cd src
 python setup.py sdist
 cd ..
 
-coin ${DIR}/src/dist/syncloud-sam-${VERSION}.tar.gz --to ${DIR}/lib
 ./coin_lib.sh
+coin ${DIR}/src/dist/syncloud-sam-${VERSION}.tar.gz --to ${DIR}/lib
 
 rm -rf build
 BUILD_DIR=${DIR}/build/${NAME}
