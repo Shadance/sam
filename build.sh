@@ -30,8 +30,9 @@ rm -rf build
 BUILD_DIR=${DIR}/build/${NAME}
 mkdir -p ${BUILD_DIR}
 
+DOWNLOAD_URL=http://build.syncloud.org:8111/guestAuth/repository/download
 PYTHON_ZIP=python.tar.gz
-coin --to ${BUILD_DIR} --cache_folder python_${ARCHITECTURE} raw http://build.syncloud.org:8111/guestAuth/repository/download/thirdparty_python_${ARCHITECTURE}/lastSuccessful/${PYTHON_ZIP}
+coin --to ${BUILD_DIR} --cache_folder python_${ARCHITECTURE} raw ${DOWNLOAD_URL}/thirdparty_python_${ARCHITECTURE}/lastSuccessful/${PYTHON_ZIP}
 
 cp -r lib ${BUILD_DIR}
 cp -r bin ${BUILD_DIR}
