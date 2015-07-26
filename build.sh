@@ -2,28 +2,17 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd ${DIR}
-
 NAME="sam"
-ARCHITECTURE=$1
-VERSION="local"
 
+ARCHITECTURE=$(dpkg-architecture -qDEB_HOST_GNU_CPU)
+if [ ! -z "$1" ]; then
+    ARCHITECTURE=$1
+fi
+
+VERSION="local"
 if [ ! -z "$2" ]; then
     VERSION=$2
 fi
-
-function 3rdparty {
-  APP_ID=$1
-  APP_FILE=$2
-  if [ ! -d ${DIR}/3rdparty ]; then
-    mkdir ${DIR}/3rdparty
-  fi
-  if [ ! -f ${DIR}/3rdparty/${APP_FILE} ]; then
-    wget http://build.syncloud.org:8111/guestAuth/repository/download/thirdparty_${APP_ID}_${ARCHITECTURE}/lastSuccessful/${APP_FILE} \
-    -O ${DIR}/3rdparty/${APP_FILE} --progress dot:giga
-  else
-    echo "skipping ${APP_ID}"
-  fi
-}
 
 pip install --upgrade coin
 
@@ -42,9 +31,7 @@ BUILD_DIR=${DIR}/build/${NAME}
 mkdir -p ${BUILD_DIR}
 
 PYTHON_ZIP=python.tar.gz
-3rdparty python ${PYTHON_ZIP}
-
-tar -xf ${DIR}/3rdparty/${PYTHON_ZIP} -C ${BUILD_DIR}
+coin --to ${BUILD_DIR} --cache_folder python_${ARCHITECTURE} raw http://build.syncloud.org:8111/guestAuth/repository/download/thirdparty_python_${ARCHITECTURE}/lastSuccessful/${PYTHON_ZIP}
 
 cp -r lib ${BUILD_DIR}
 cp -r bin ${BUILD_DIR}
