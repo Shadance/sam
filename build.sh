@@ -4,9 +4,9 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd ${DIR}
 NAME="sam"
 
-ARCHITECTURE=$(dpkg-architecture -qDEB_HOST_GNU_CPU)
+ARCH=$(dpkg-architecture -qDEB_HOST_GNU_CPU)
 if [ ! -z "$1" ]; then
-    ARCHITECTURE=$1
+    ARCH=$1
 fi
 
 VERSION="local"
@@ -31,17 +31,16 @@ BUILD_DIR=${DIR}/build/${NAME}
 mkdir -p ${BUILD_DIR}
 
 DOWNLOAD_URL=http://build.syncloud.org:8111/guestAuth/repository/download
-PYTHON_ZIP=python.tar.gz
-coin --to ${BUILD_DIR} --cache_folder python_${ARCHITECTURE} raw ${DOWNLOAD_URL}/thirdparty_python_${ARCHITECTURE}/lastSuccessful/${PYTHON_ZIP}
+coin --to ${BUILD_DIR} raw ${DOWNLOAD_URL}/thirdparty_python_${ARCH}/lastSuccessful/python-${ARCH}.tar.gz
 
 cp -r lib ${BUILD_DIR}
 cp -r bin ${BUILD_DIR}
 cp -r config ${BUILD_DIR}
 
-sed  -i "s/arch:.*/arch: ${ARCHITECTURE}/g" build/${NAME}/config/sam.cfg
+sed  -i "s/arch:.*/arch: ${ARCH}/g" build/${NAME}/config/sam.cfg
 
 mkdir build/${NAME}/META
 echo ${NAME} >> build/${NAME}/META/app
 echo ${VERSION} >> build/${NAME}/META/version
 rm -rf ${NAME}*.tar.gz
-tar -zcf ${NAME}-${VERSION}-${ARCHITECTURE}.tar.gz -C build ${NAME}
+tar -zcf ${NAME}-${VERSION}-${ARCH}.tar.gz -C build ${NAME}
