@@ -34,7 +34,12 @@ def get_arg_parser():
     sub = subparsers.add_parser('update', help="update apps repository")
     sub.add_argument('--release', default=None, dest='release')
 
-    sub = subparsers.add_parser('upgrade_all', help="upgrade apps and install required apps")
+    sub = subparsers.add_parser('upgrade', help="upgrade an app")
+    sub.add_argument('app_id', help="application id")
+
+    #TODO: Not sure why do we need this
+    subparsers.add_parser('upgrade_all', help="upgrade apps and install required apps")
+
 
     return parser
 

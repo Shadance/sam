@@ -62,6 +62,10 @@ class Manager:
         with open(self.release_filename, 'w+') as f:
             f.write(release)
 
+    def upgrade(self, app_id):
+        self.remove(app_id)
+        self.install(app_id)
+
     def update(self, release=None):
         self.logger.info("update")
 
