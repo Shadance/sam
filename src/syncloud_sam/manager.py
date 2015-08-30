@@ -62,9 +62,9 @@ class Manager:
         with open(self.release_filename, 'w+') as f:
             f.write(release)
 
-    def upgrade(self, app_id_or_filename):
-        app_archive_filename, temp_dir = self.__download(app_id_or_filename)
-        self.remove(app_id_or_filename)
+    def upgrade(self, app_id):
+        app_archive_filename, temp_dir = self.__download(app_id)
+        self.remove(app_id)
         self.__install(app_archive_filename, temp_dir)
 
     def update(self, release=None):
