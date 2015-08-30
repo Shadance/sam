@@ -62,9 +62,10 @@ class Manager:
         with open(self.release_filename, 'w+') as f:
             f.write(release)
 
-    def upgrade(self, app_id):
-        self.remove(app_id)
-        self.install(app_id)
+    def upgrade(self, app_id_or_filename):
+        app_archive_filename, temp_dir = self.__download(app_id_or_filename)
+        self.remove(app_id_or_filename)
+        self.__install(app_archive_filename, temp_dir)
 
     def update(self, release=None):
         self.logger.info("update")
@@ -128,6 +129,15 @@ class Manager:
         return "removed successfully"
 
     def install(self, app_id_or_filename):
+        app_archive_filename, temp_dir = self.__download(app_id_or_filename)
+        self.__install(app_archive_filename, temp_dir)
+
+    def __install(self, app_archive_filename, temp_dir):
+        self.install_file(app_archive_filename)
+        if temp_dir:
+            shutil.rmtree(temp_dir)
+
+    def __download(self, app_id_or_filename):
         app_archive_filename = app_id_or_filename
         temp_dir = None
         if not exists(app_archive_filename):
@@ -142,10 +152,7 @@ class Manager:
             app_archive_filename = join(download_dir, app_filename)
             self.logger.info("downloading: {0}".format(app_url))
             urllib.urlretrieve(app_url, filename=app_archive_filename)
-
-        self.install_file(app_archive_filename)
-        if temp_dir:
-            shutil.rmtree(temp_dir)
+        return app_archive_filename, temp_dir
 
     def install_file(self, filename):
         unpack_dir = tempfile.mkdtemp()
