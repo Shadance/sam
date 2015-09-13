@@ -119,7 +119,7 @@ class Manager:
         return [self.get_app_versions(app) for app in apps]
 
     def remove(self, app_id):
-        self.run_hook(app_id, 'pre-remove')
+        self.run_hook(app_id, 'pre-remove', False)
 
         app_installed_path = join(self.config.apps_dir(), app_id)
         if exists(app_installed_path):
@@ -198,11 +198,15 @@ class Manager:
 
         return found
 
-    def run_hook(self, app_id, action):
+    def run_hook(self, app_id, action, throw_on_error=True):
         hook_script = join(self.config.apps_dir(), app_id, 'bin', action)
         if not os.path.isfile(hook_script):
             self.logger.info("{} hook is not found, skipping".format(hook_script))
             return
 
         if not runner.call(' '.join([self.config.run_hook_path(), hook_script]), self.logger, stdout_log_level=logging.INFO, shell=True) == 0:
-            raise Exception("unable to run {}".format(hook_script))
+            message = "unable to run {}".format(hook_script)
+            if throw_on_error:
+                raise Exception(message)
+            else:
+                self.logger.error(message)
