@@ -42,8 +42,9 @@ class Versions:
 
     def remove(self, name):
         versions = self.__read()
-        del versions[name]
-        self.__write(versions)
+        if name in versions:
+            del versions[name]
+            self.__write(versions)
 
     def update(self, name, version):
         versions = self.__read()
