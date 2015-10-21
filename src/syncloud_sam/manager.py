@@ -53,7 +53,7 @@ class Manager:
     def get_release(self):
         if os.path.isfile(self.release_filename):
             with open(self.release_filename, 'r') as f:
-                release = f.read()
+                release = f.read().strip()
         else:
             raise Exception('The release is not set')
         return release
