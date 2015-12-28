@@ -3,8 +3,7 @@ from os.path import join, dirname
 
 requirements = [
     'urllib3==1.7.1',
-    'convertible==0.13',
-    'syncloud-app==0.38'
+    'syncloud-lib==2'
 ]
 
 version = open(join(dirname(__file__), 'version')).read().strip()
