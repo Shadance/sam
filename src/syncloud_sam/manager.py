@@ -225,7 +225,7 @@ class Manager:
         urllib.urlretrieve(versions_source_url, filename=versions_path)
 
         versions = Versions(versions_path)
-        for app, version in overrides:
+        for app, version in overrides.iteritems():
             versions.update(app, version)
 
         s3_releases_url = releases_url.replace('http:', 's3:')
