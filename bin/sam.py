@@ -37,6 +37,12 @@ def get_arg_parser():
     sub = subparsers.add_parser('upgrade', help="upgrade an app")
     sub.add_argument('app_id', help="application id")
 
+    sub = subparsers.add_parser('release', help="make/update release")
+    sub.add_argument('source', help="existing release to copy from")
+    sub.add_argument('target', help="release that will be created/updated")
+    sub.add_argument('--override', nargs='*', help='apps versions overrides in format: <app>=<version>', default=[])
+
+
     #TODO: Not sure why do we need this
     subparsers.add_parser('upgrade_all', help="upgrade apps and install required apps")
 

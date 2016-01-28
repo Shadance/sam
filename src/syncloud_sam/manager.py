@@ -31,16 +31,14 @@ def get_sam(sam_home):
     repo_versions = Versions(repo_versions_filename, allow_latest=True)
     applcations = Applications(app_index_filename)
 
-    manager = Manager(None, config, applcations, repo_versions, installed_versions)
+    manager = Manager(config, applcations, repo_versions, installed_versions)
 
     return manager
 
 
 class Manager:
 
-    def __init__(self, pip, config, applications, repo_versions, installed_versions):
-        self.pip = pip
-
+    def __init__(self, config, applications, repo_versions, installed_versions):
         self.config = config
         self.apps_dir = config.apps_dir()
 
@@ -210,3 +208,36 @@ class Manager:
                 raise Exception(message)
             else:
                 self.logger.error(message)
+
+    def release(self, source, target, override):
+        overrides = dict((o.split('=')[0], o.split('=')[1]) for o in override)
+
+        download_dir = tempfile.mkdtemp()
+        index_path = join(download_dir, 'index')
+        versions_path = join(download_dir, 'versions')
+
+        releases_url = self.config.releases_url()
+
+        index_source_url = join(releases_url, source, 'index')
+        versions_source_url = join(releases_url, source, 'versions')
+
+        urllib.urlretrieve(index_source_url, filename=index_path)
+        urllib.urlretrieve(versions_source_url, filename=versions_path)
+
+        versions = Versions(versions_path)
+        for app, version in overrides:
+            versions.update(app, version)
+
+        s3_releases_url = releases_url.replace('http:', 's3:')
+
+        index_target_url = join(s3_releases_url, target, 'index')
+        versions_target_url = join(s3_releases_url, target, 'versions')
+
+        self.s3_upload(index_path, index_target_url)
+        self.s3_upload(versions_path, versions_target_url)
+
+    def s3_upload(self, filename, url):
+        command = ' '.join(['s3cmd', 'put', filename, url])
+        if not runner.call(command, self.logger, stdout_log_level=logging.INFO, shell=True) == 0:
+            message = 'unable to execute "{}"'.format(command)
+            raise Exception(message)
