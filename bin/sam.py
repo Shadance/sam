@@ -20,6 +20,7 @@ from syncloud_sam.manager import get_sam
 def get_arg_parser():
     parser = argparse.ArgumentParser(description='Syncloud application manager')
     parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--text', action='store_true')
 
     subparsers = parser.add_subparsers(help='available commands', dest='action')
 
@@ -35,6 +36,10 @@ def get_arg_parser():
     sub.add_argument('--release', default=None, dest='release')
 
     sub = subparsers.add_parser('upgrade', help="upgrade an app")
+    sub.add_argument('app_id', help="application id")
+
+    sub = subparsers.add_parser('version', help="get version of the app")
+    sub.add_argument('release', help="release")
     sub.add_argument('app_id', help="application id")
 
     sub = subparsers.add_parser('release', help="make/update release")

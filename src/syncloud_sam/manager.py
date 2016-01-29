@@ -98,6 +98,17 @@ class Manager:
 
             return self.__upgradable_apps()
 
+    def version(self, release, app_id):
+        releases_url = self.config.releases_url()
+        versions_url = join(releases_url, release, 'versions')
+        download_dir = tempfile.mkdtemp()
+        downloaded_versions = join(download_dir, 'versions')
+        urllib.urlretrieve(versions_url, filename=downloaded_versions)
+        versions = Versions(downloaded_versions)
+        app_version = versions.version(app_id)
+        return app_version
+
+
     def newer_available(self, application):
         if application.installed_version:
             return application.current_version != application.installed_version
