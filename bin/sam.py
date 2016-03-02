@@ -47,10 +47,8 @@ def get_arg_parser():
     sub.add_argument('target', help="release that will be created/updated")
     sub.add_argument('--override', nargs='*', help='apps versions overrides in format: <app>=<version>', default=[])
 
-
     #TODO: Not sure why do we need this
     subparsers.add_parser('upgrade_all', help="upgrade apps and install required apps")
-
 
     return parser
 
@@ -66,4 +64,4 @@ if __name__ == '__main__':
 
     sam = get_sam(sam_home)
 
-    main.execute(sam, args)
+    main.execute(sam, args, exit_code_on_error=1)
