@@ -142,9 +142,12 @@ class Manager:
         self.__install(app_archive_filename, temp_dir)
 
     def __install(self, app_archive_filename, temp_dir):
-        self.install_file(app_archive_filename)
-        if temp_dir:
-            shutil.rmtree(temp_dir)
+        try:
+            self.install_file(app_archive_filename)
+        finally:
+            if temp_dir:
+                self.logger.info("cleanup temp dir {0}".format(temp_dir))
+                shutil.rmtree(temp_dir)
 
     def __download(self, app_id_or_filename):
         app_archive_filename = app_id_or_filename
