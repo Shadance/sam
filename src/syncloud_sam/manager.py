@@ -29,9 +29,9 @@ def get_sam(sam_home):
 
     installed_versions = Versions(installed_versions_filename)
     repo_versions = Versions(repo_versions_filename, allow_latest=True)
-    applcations = Applications(app_index_filename)
+    applications = Applications(app_index_filename)
 
-    manager = Manager(config, applcations, repo_versions, installed_versions)
+    manager = Manager(config, applications, repo_versions, installed_versions)
 
     return manager
 
@@ -108,7 +108,6 @@ class Manager:
         app_version = versions.version(app_id)
         return app_version
 
-
     def newer_available(self, application):
         if application.installed_version:
             return application.current_version != application.installed_version
@@ -135,7 +134,8 @@ class Manager:
             shutil.rmtree(app_installed_path)
 
         self.installed_versions.remove(app_id)
-        return "removed successfully"
+        self.logger.info("{0}: removed successfully".format(app_id))
+        return
 
     def install(self, app_id_or_filename):
         app_archive_filename, temp_dir = self.__download(app_id_or_filename)
@@ -150,6 +150,7 @@ class Manager:
                 shutil.rmtree(temp_dir)
 
     def __download(self, app_id_or_filename):
+        self.logger.info("download app_id or filename: {0}".format(app_id_or_filename))
         app_archive_filename = app_id_or_filename
         temp_dir = None
         if not exists(app_archive_filename):
@@ -167,6 +168,7 @@ class Manager:
         return app_archive_filename, temp_dir
 
     def install_file(self, filename):
+        self.logger.info("install filename: {0}".format(filename))
         unpack_dir = tempfile.mkdtemp()
         tarfile.open(filename).extractall(unpack_dir)
         unpack_app_folder = os.listdir(unpack_dir)[0]
@@ -181,7 +183,8 @@ class Manager:
         shutil.rmtree(unpack_dir)
         self.run_hook(app_id, 'post-install')
         self.installed_versions.update(app_id, version)
-        return "installed successfully"
+        self.logger.info("{0}: installed successfully".format(app_id))
+        return
 
     def read_meta_app_version(self, app_folder):
         app_id_path = join(app_folder, 'META', 'app')
