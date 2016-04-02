@@ -5,7 +5,7 @@ import tarfile
 import shutil
 import logging
 import logging.handlers
-from os.path import join, exists
+from os.path import join, exists, isfile
 
 from syncloud_app import logger
 from syncloud_app import runner
@@ -153,7 +153,7 @@ class Manager:
         self.logger.info("download app_id or filename: {0}".format(app_id_or_filename))
         app_archive_filename = app_id_or_filename
         temp_dir = None
-        if not exists(app_archive_filename):
+        if not isfile(app_archive_filename):
             app_id = app_id_or_filename
             a = self.get_app(app_id, False)
             version = a.current_version
