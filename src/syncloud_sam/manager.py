@@ -5,7 +5,8 @@ import tarfile
 import shutil
 import logging
 import logging.handlers
-from os.path import join, exists, isfile
+from os.path import join, exists, isfile, isdir
+from os import makedirs, remove
 
 from syncloud_app import logger
 from syncloud_app import runner
@@ -61,9 +62,10 @@ class Manager:
             f.write(release)
 
     def upgrade(self, app_id):
-        app_archive_filename, temp_dir = self.__download(app_id)
+        app_archive_filename = self.__download(app_id)
         self.remove(app_id)
-        self.__install(app_archive_filename, temp_dir)
+        self.install_file(app_archive_filename)
+        remove(app_archive_filename)
 
     def update(self, release=None):
         self.logger.info("update")
@@ -138,34 +140,29 @@ class Manager:
         return
 
     def install(self, app_id_or_filename):
-        app_archive_filename, temp_dir = self.__download(app_id_or_filename)
-        self.__install(app_archive_filename, temp_dir)
-
-    def __install(self, app_archive_filename, temp_dir):
-        try:
-            self.install_file(app_archive_filename)
-        finally:
-            if temp_dir:
-                self.logger.info("cleanup temp dir {0}".format(temp_dir))
-                shutil.rmtree(temp_dir)
-
-    def __download(self, app_id_or_filename):
-        self.logger.info("download app_id or filename: {0}".format(app_id_or_filename))
         app_archive_filename = app_id_or_filename
-        temp_dir = None
         if not isfile(app_archive_filename):
-            app_id = app_id_or_filename
-            a = self.get_app(app_id, False)
-            version = a.current_version
+            # it is app id - we need to download app file
+            app_archive_filename = self.__download(app_id_or_filename)
+        self.install_file(app_archive_filename)
+        if not isfile(app_id_or_filename):
+            # it was app id - we need to remove downloaded file
+            remove(app_archive_filename)
 
-            download_dir = tempfile.mkdtemp()
-            temp_dir = download_dir
-            app_filename = '{}-{}-{}.tar.gz'.format(app_id, version, self.config.arch())
-            app_url = join(self.config.apps_url(), app_filename)
-            app_archive_filename = join(download_dir, app_filename)
-            self.logger.info("downloading: {0}".format(app_url))
-            urllib.urlretrieve(app_url, filename=app_archive_filename)
-        return app_archive_filename, temp_dir
+    def __download(self, app_id):
+        self.logger.info("download app_id: {0}".format(app_id))
+        a = self.get_app(app_id, False)
+        version = a.current_version
+
+        download_dir = self.config.temp_dir()
+        if not isdir(download_dir):
+            makedirs(download_dir)
+        app_filename = '{}-{}-{}.tar.gz'.format(app_id, version, self.config.arch())
+        app_url = join(self.config.apps_url(), app_filename)
+        app_archive_filename = join(download_dir, app_filename)
+        self.logger.info("downloading: {0}".format(app_url))
+        urllib.urlretrieve(app_url, filename=app_archive_filename)
+        return app_archive_filename
 
     def install_file(self, filename):
         self.logger.info("install filename: {0}".format(filename))

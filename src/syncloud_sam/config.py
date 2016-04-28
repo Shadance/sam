@@ -33,6 +33,12 @@ class SamConfig:
     def set_status_dir(self, value):
         self.__set_param('sam', 'status_dir', value)
 
+    def temp_dir(self):
+        return self.parser.get('sam', 'temp_dir')
+
+    def set_temp_dir(self, value):
+        self.__set_param('sam', 'temp_dir', value)
+
     def apps_url(self):
         return self.parser.get('sam', 'apps_url')
 
@@ -53,3 +59,6 @@ class SamConfig:
 
     def arch(self):
         return self.parser.get('sam', 'arch')
+
+    def set_arch(self, value):
+        self.__set_param('sam', 'arch', value)

@@ -9,6 +9,12 @@ import tempfile
 import pytest
 from syncloud_app import logger
 
+import sys, os
+myPath = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.abspath(join(myPath, '../..')))
+
+print(sys.path)
+
 from syncloud_sam.manager import get_sam
 from syncloud_sam.config import SamConfig
 
@@ -117,6 +123,8 @@ class BaseTest:
         self.config.set_status_dir(status_dir)
         self.config.set_apps_url(apps_url)
         self.config.set_releases_url(releases_url)
+        self.config.set_temp_dir('/tmp/sam')
+        self.config.set_arch('x86_64')
 
         self.run_hook_tool_dir = tempfile.mkdtemp()
         run_hook_content='#!/bin/sh\necho "run_hook executed"'
