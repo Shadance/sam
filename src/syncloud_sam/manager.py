@@ -62,7 +62,7 @@ class Manager:
             f.write(release)
 
     def upgrade(self, app_id):
-        app_archive_filename = self.__download(app_id)
+        app_archive_filename = self.download(app_id)
         self.remove(app_id)
         self.install_file(app_archive_filename)
         remove(app_archive_filename)
@@ -103,7 +103,7 @@ class Manager:
     def version(self, release, app_id):
         releases_url = self.config.releases_url()
         versions_url = join(releases_url, release, 'versions')
-        download_dir = tempfile.mkdtemp()
+        download_dir = tempfile.mkdtemp(dir=self.config.temp_dir())
         downloaded_versions = join(download_dir, 'versions')
         urllib.urlretrieve(versions_url, filename=downloaded_versions)
         versions = Versions(downloaded_versions)
@@ -143,13 +143,13 @@ class Manager:
         app_archive_filename = app_id_or_filename
         if not isfile(app_archive_filename):
             # it is app id - we need to download app file
-            app_archive_filename = self.__download(app_id_or_filename)
+            app_archive_filename = self.download(app_id_or_filename)
         self.install_file(app_archive_filename)
         if not isfile(app_id_or_filename):
             # it was app id - we need to remove downloaded file
             remove(app_archive_filename)
 
-    def __download(self, app_id):
+    def download(self, app_id):
         self.logger.info("download app_id: {0}".format(app_id))
         a = self.get_app(app_id, False)
         version = a.current_version
@@ -166,7 +166,7 @@ class Manager:
 
     def install_file(self, filename):
         self.logger.info("install filename: {0}".format(filename))
-        unpack_dir = tempfile.mkdtemp()
+        unpack_dir = tempfile.mkdtemp(dir=self.config.temp_dir())
         tarfile.open(filename).extractall(unpack_dir)
         unpack_app_folder = os.listdir(unpack_dir)[0]
         unpack_app_path = join(unpack_dir, unpack_app_folder)
@@ -226,7 +226,7 @@ class Manager:
     def release(self, source, target, override):
         overrides = dict((o.split('=')[0], o.split('=')[1]) for o in override)
 
-        download_dir = tempfile.mkdtemp()
+        download_dir = tempfile.mkdtemp(dir=self.config.temp_dir())
         index_path = join(download_dir, 'index')
         versions_path = join(download_dir, 'versions')
 
@@ -249,6 +249,8 @@ class Manager:
 
         self.s3_upload(index_path, index_target_url)
         self.s3_upload(versions_path, versions_target_url)
+
+        shutil.rmtree(download_dir)
 
     def s3_upload(self, filename, url):
         command = ' '.join(['s3cmd', 'put', filename, url])

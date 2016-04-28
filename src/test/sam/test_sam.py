@@ -1,7 +1,6 @@
 import logging
 
-import os
-from os.path import dirname, join, split
+from os.path import dirname, join, isdir
 from os import makedirs
 
 import shutil
@@ -24,6 +23,12 @@ import tarfile
 test_dir = dirname(__file__)
 logger.init(logging.DEBUG, console=True)
 
+test_temp_dir = '/tmp/sam-tests'
+
+def temp_dir():
+    if not isdir(test_temp_dir):
+        makedirs(test_temp_dir)
+    return tempfile.mkdtemp(dir=test_temp_dir)
 
 def text_file(path, filename, text=''):
     app_path = join(path, filename)
@@ -37,7 +42,7 @@ def make_tarfile(output_filename, source_dir):
         tar.add(source_dir, arcname=os.path.basename(source_dir))
 
 def create_app_version(name, version, architecture, pre_remove=None, post_install=None):
-    temp_folder = tempfile.mkdtemp()
+    temp_folder = temp_dir()
     app_folder = join(temp_folder, name)
     app_bin_folder = join(app_folder, 'bin')
     makedirs(app_bin_folder)
@@ -67,7 +72,7 @@ echo "{}"'''.format(version)
 
 
 def create_release(release, index, versions=None):
-    prepare_dir_root = tempfile.mkdtemp()
+    prepare_dir_root = temp_dir()
     prepare_dir = join(prepare_dir_root, 'app-' + release)
     os.makedirs(prepare_dir)
 
@@ -107,13 +112,13 @@ def one_app_index(required=False):
 
 class BaseTest:
     def setup(self):
-        self.home_dir = tempfile.mkdtemp()
+        self.home_dir = temp_dir()
         config_dir = join(self.home_dir, 'config')
         os.makedirs(config_dir)
-        self.apps_dir = tempfile.mkdtemp()
-        status_dir = tempfile.mkdtemp()
-        self.apps_url_dir = tempfile.mkdtemp()
-        self.releases_url_dir = tempfile.mkdtemp()
+        self.apps_dir = temp_dir()
+        status_dir = temp_dir()
+        self.apps_url_dir = temp_dir()
+        self.releases_url_dir = temp_dir()
 
         apps_url = 'file://'+self.apps_url_dir
         releases_url = 'file://'+self.releases_url_dir
@@ -126,7 +131,7 @@ class BaseTest:
         self.config.set_temp_dir('/tmp/sam')
         self.config.set_arch('x86_64')
 
-        self.run_hook_tool_dir = tempfile.mkdtemp()
+        self.run_hook_tool_dir = temp_dir()
         run_hook_content='#!/bin/sh\necho "run_hook executed"'
         run_hook_tool_path = text_file(self.run_hook_tool_dir, "run_hook", run_hook_content)
         self.config.set_run_hook_path(run_hook_tool_path)
