@@ -48,6 +48,10 @@ class Manager:
         self.installed_versions = installed_versions
         self.logger = logger.get_logger('sam.manager')
         self.release_filename = join(self.config.status_dir(), 'release')
+        sam_temp_dir = self.config.temp_dir()
+        if not isdir(sam_temp_dir):
+            makedirs(sam_temp_dir)
+
 
     def get_release(self):
         if os.path.isfile(self.release_filename):
@@ -155,8 +159,6 @@ class Manager:
         version = a.current_version
 
         download_dir = self.config.temp_dir()
-        if not isdir(download_dir):
-            makedirs(download_dir)
         app_filename = '{}-{}-{}.tar.gz'.format(app_id, version, self.config.arch())
         app_url = join(self.config.apps_url(), app_filename)
         app_archive_filename = join(download_dir, app_filename)
