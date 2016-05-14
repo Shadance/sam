@@ -1,7 +1,7 @@
 import logging
 
-from os.path import dirname, join, isdir
-from os import makedirs
+from os.path import dirname, join, isdir, isfile
+from os import makedirs, remove
 
 import shutil
 import tempfile
@@ -32,10 +32,16 @@ def temp_dir():
 
 def text_file(path, filename, text=''):
     app_path = join(path, filename)
+    if isfile(app_path):
+        remove(app_path)
     f = open(app_path, 'w')
     f.write(text)
     f.close()
     return app_path
+
+def get_text(path):
+    with open(path, 'r') as f:
+        return f.read()
 
 def make_tarfile(output_filename, source_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
@@ -96,7 +102,12 @@ def assert_single_application(applications, id, name, current_version, installed
     assert test_app.installed_version == installed_version
 
 
-def one_app_index(required=False):
+def one_app_index(required=False, icon=None):
+    if icon is None:
+        icon_filename = ''
+    else:
+        icon_filename = ', "icon": "%s"' % icon
+
     app_index_template = '''{
       "apps" : [
         {
@@ -104,10 +115,11 @@ def one_app_index(required=False):
           "id" : "test-app",
           "type": "admin",
           "required": %s
+          %s
         }
       ]
     }'''
-    return app_index_template % str(required).lower()
+    return app_index_template % (str(required).lower(), icon_filename)
 
 
 class BaseTest:
@@ -119,6 +131,8 @@ class BaseTest:
         status_dir = temp_dir()
         self.apps_url_dir = temp_dir()
         self.releases_url_dir = temp_dir()
+        self.images_url_dir = temp_dir()
+        self.images_dir = temp_dir()
 
         apps_url = 'file://'+self.apps_url_dir
         releases_url = 'file://'+self.releases_url_dir
@@ -130,6 +144,8 @@ class BaseTest:
         self.config.set_releases_url(releases_url)
         self.config.set_temp_dir('/tmp/sam')
         self.config.set_arch('x86_64')
+        self.config.set_images_url(self.images_url_dir)
+        self.config.set_images_dir(self.images_dir)
 
         self.run_hook_tool_dir = temp_dir()
         run_hook_content='#!/bin/sh\necho "run_hook executed"'
@@ -260,6 +276,65 @@ class TestUpdates(BaseTest):
 
         applications = sam.list()
         assert_single_application(applications, 'test-app', 'test app', '1.0', None)
+
+    def test_update_download_icon_new(self):
+        text_file(self.config.images_url(), 'test-app.png', 'Image content')
+        text_file(self.config.images_url(), 'test-app.png.md5', 'Image md5 sum')
+
+        self.create_app_version('test-app', '1.0')
+        self.create_release('release-1.0', one_app_index(icon='test-app.png'), 'test-app=1.0')
+
+        self.sam.update('release-1.0')
+
+        icon_path = join(self.config.images_dir(), 'test-app.png')
+        icon_md5_path = join(self.config.images_dir(), 'test-app.png.md5')
+
+        assert isfile(icon_path)
+        assert isfile(icon_md5_path)
+
+    def test_update_download_icon_no_md5_changes(self):
+        image_before_update = 'Image content'
+
+        text_file(self.config.images_url(), 'test-app.png', image_before_update)
+        text_file(self.config.images_url(), 'test-app.png.md5', 'Image md5 sum')
+
+        self.create_app_version('test-app', '1.0')
+        self.create_release('release-1.0', one_app_index(icon='test-app.png'), 'test-app=1.0')
+
+        self.sam.update('release-1.0')
+
+        image_after_update = 'Image content UPDATED but md5 was not changed'
+
+        text_file(self.config.images_url(), 'test-app.png', image_after_update)
+
+        self.sam.update('release-1.0')
+
+        actual_image = get_text(join(self.config.images_dir(), 'test-app.png'))
+
+        assert actual_image == image_before_update
+
+    def test_update_download_icon_md5_changes(self):
+        image_before_update = 'Image content'
+
+        text_file(self.config.images_url(), 'test-app.png', image_before_update)
+        text_file(self.config.images_url(), 'test-app.png.md5', 'Image md5 sum')
+
+        self.create_app_version('test-app', '1.0')
+        self.create_release('release-1.0', one_app_index(icon='test-app.png'), 'test-app=1.0')
+
+        self.sam.update('release-1.0')
+
+        image_after_update = 'Image content UPDATED'
+        image_md5_after_update = 'Image md5 sum UPDATED'
+
+        text_file(self.config.images_url(), 'test-app.png', image_after_update)
+        text_file(self.config.images_url(), 'test-app.png.md5', image_md5_after_update)
+
+        self.sam.update('release-1.0')
+
+        actual_image = get_text(join(self.config.images_url(), 'test-app.png'))
+
+        assert actual_image == image_after_update
 
 
 class TestUpgradeAll(BaseTest):

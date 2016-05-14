@@ -6,6 +6,7 @@ class App:
     name = Field()
     required = Field(default=False)
     ui = Field(default=False)
+    icon = Field(default=None)
 
 
 class Apps:

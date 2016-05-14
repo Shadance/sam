@@ -51,7 +51,9 @@ class Manager:
         sam_temp_dir = self.config.temp_dir()
         if not isdir(sam_temp_dir):
             makedirs(sam_temp_dir)
-
+        images_dir = self.config.images_dir()
+        if not isdir(images_dir):
+            makedirs(images_dir)
 
     def get_release(self):
         if os.path.isfile(self.release_filename):
@@ -102,7 +104,45 @@ class Manager:
 
             self.set_release(release)
 
+            apps = self.applications.list()
+
+            for app in apps:
+                icon_file = app.icon
+                if icon_file is not None:
+                    self.download_icon(icon_file)
+
             return self.__upgradable_apps()
+
+    def download_icon(self, filename):
+        md5_filename = filename+'.md5'
+        file_md5_url = join(self.config.images_url(), md5_filename)
+
+        download_dir = tempfile.mkdtemp()
+        downloaded_md5_path = join(download_dir, md5_filename)
+        urllib.urlretrieve(file_md5_url, filename=downloaded_md5_path)
+
+        with open(downloaded_md5_path, 'r') as f:
+            downloaded_md5 = f.read()
+
+        local_md5_path = join(self.config.images_dir(), md5_filename)
+
+        local_md5 = None
+        if isfile(local_md5_path):
+            with open(local_md5_path, 'r') as f:
+                local_md5 = f.read()
+
+        if downloaded_md5 != local_md5:
+            local_image_path = join(self.config.images_dir(), filename)
+            image_url = join(self.config.images_url(), filename)
+            if isfile(local_image_path):
+                remove(local_image_path)
+            urllib.urlretrieve(image_url, filename=local_image_path)
+            if isfile(local_md5_path):
+                remove(local_md5_path)
+            urllib.urlretrieve(file_md5_url, filename=local_md5_path)
+
+
+        shutil.rmtree(download_dir)
 
     def version(self, release, app_id):
         releases_url = self.config.releases_url()
