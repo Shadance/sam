@@ -109,13 +109,15 @@ class Manager:
             for app in apps:
                 icon_file = app.icon
                 if icon_file is not None:
-                    self.download_icon(icon_file)
+                    self.download_icon(icon_file, release)
 
             return self.__upgradable_apps()
 
-    def download_icon(self, filename):
+    def download_icon(self, filename, release):
+        images_url = join(self.config.releases_url(), release, 'images')
+
         md5_filename = filename+'.md5'
-        file_md5_url = join(self.config.images_url(), md5_filename)
+        file_md5_url = join(images_url, md5_filename)
 
         download_dir = tempfile.mkdtemp()
         downloaded_md5_path = join(download_dir, md5_filename)
@@ -133,7 +135,7 @@ class Manager:
 
         if downloaded_md5 != local_md5:
             local_image_path = join(self.config.images_dir(), filename)
-            image_url = join(self.config.images_url(), filename)
+            image_url = join(images_url, filename)
             if isfile(local_image_path):
                 remove(local_image_path)
             urllib.urlretrieve(image_url, filename=local_image_path)

@@ -51,12 +51,6 @@ class SamConfig:
     def set_apps_url(self, value):
         self.__set_param('sam', 'apps_url', value)
 
-    def images_url(self):
-        return self.parser.get('sam', 'iamges_url')
-
-    def set_images_url(self, value):
-        self.__set_param('sam', 'iamges_url', value)
-
     def releases_url(self):
         return self.parser.get('sam', 'releases_url')
 
