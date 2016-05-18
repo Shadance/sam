@@ -273,31 +273,48 @@ class Manager:
         download_dir = tempfile.mkdtemp(dir=self.config.temp_dir())
         index_path = join(download_dir, 'index')
         versions_path = join(download_dir, 'versions')
+        images_path = join(download_dir, 'images')+'/'
+        makedirs(images_path)
 
         releases_url = self.config.releases_url()
+        s3_releases_url = releases_url.replace('http:', 's3:')
 
         index_source_url = join(releases_url, source, 'index')
         versions_source_url = join(releases_url, source, 'versions')
+        images_source_url = join(s3_releases_url, source, 'images')+'/'
 
         urllib.urlretrieve(index_source_url, filename=index_path)
         urllib.urlretrieve(versions_source_url, filename=versions_path)
+        self.s3_download_dir(images_source_url, images_path)
 
         versions = Versions(versions_path)
         for app, version in overrides.iteritems():
             versions.update(app, version)
 
-        s3_releases_url = releases_url.replace('http:', 's3:')
-
         index_target_url = join(s3_releases_url, target, 'index')
         versions_target_url = join(s3_releases_url, target, 'versions')
+        images_target_url = join(s3_releases_url, target, 'images')+'/'
 
-        self.s3_upload(index_path, index_target_url)
-        self.s3_upload(versions_path, versions_target_url)
+        self.s3_upload_file(index_path, index_target_url)
+        self.s3_upload_file(versions_path, versions_target_url)
+        self.s3_upload_dir(images_path, images_target_url)
 
         shutil.rmtree(download_dir)
 
-    def s3_upload(self, filename, url):
-        command = ' '.join(['s3cmd', 'put', filename, url])
+    def s3_upload_file(self, path, url):
+        command = ' '.join(['s3cmd', 'put', path, url])
+        if not runner.call(command, self.logger, stdout_log_level=logging.INFO, shell=True) == 0:
+            message = 'unable to execute "{}"'.format(command)
+            raise Exception(message)
+
+    def s3_upload_dir(self, path, url):
+        command = ' '.join(['s3cmd', 'sync', path, url])
+        if not runner.call(command, self.logger, stdout_log_level=logging.INFO, shell=True) == 0:
+            message = 'unable to execute "{}"'.format(command)
+            raise Exception(message)
+
+    def s3_download_dir(self, url, path):
+        command = ' '.join(['s3cmd', 'sync', url, path])
         if not runner.call(command, self.logger, stdout_log_level=logging.INFO, shell=True) == 0:
             message = 'unable to execute "{}"'.format(command)
             raise Exception(message)
